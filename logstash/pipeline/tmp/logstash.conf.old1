@@ -1,0 +1,63 @@
+input {
+	file {
+		type => "java"
+		path => [
+			"/usr/share/logstash/logs/app/*.log"    # Make sure you provide the absolute path of the file here
+		]
+		codec => multiline {
+			pattern => "^%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}.*"
+			negate => "true"
+			what => "previous"
+		}
+	}
+	file {
+		type => "apache"
+		path => [
+			"/usr/share/logstash/logs/apache/*"    # Make sure you provide the absolute path of the file here
+		]
+	}
+}
+
+filter {
+	if ![ecs] {
+		mutate {
+			rename => ["host", "[host][name]" ]
+			update => { "[ecs][version]" => "1.5.0" }
+			add_tag => [ "ecs_converted" ]
+		}
+	}
+	if [type] == "apache"{
+		grok {
+			match => { "message" => '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:method} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)' }
+		}
+	}else if [type] == "java"{
+		grok {
+			match => [
+				"message",
+				"(?<timestamp>%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}) %{LOGLEVEL:level} %{NUMBER:pid} --- \[(?<thread>[A-Za-z0-9-]+)\] [A-Za-z0-9.]*\.(?<class>[A-Za-z0-9#_]+)\s*:\s+(?<logmessage>.*)",
+				"message",
+				"(?<timestamp>%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}) %{LOGLEVEL:level} %{NUMBER:pid} --- .+? :\s+(?<logmessage>.*)",
+				"message",
+				"(?<timestamp>%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME})  %{LOGLEVEL:level} %{NUMBER:pid} --- \[(?<thread>[A-Za-z0-9-]+)\] [A-Za-z0-9.]*\.(?<class>[A-Za-z0-9#_]+)\s*:\s+(?<logmessage>.*)",
+				"message",
+				"(?<timestamp>%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME})  %{LOGLEVEL:level} %{NUMBER:pid} --- .+? :\s+(?<logmessage>.*)"
+			]
+		}
+	}
+}
+
+output {
+	if [type] == "java"{
+		# stdout { codec => rubydebug }
+		if [level] in [ "ERROR", "WARN", "STACKTRACE" ] {
+			stdout { codec => rubydebug }
+			# elasticsearch {
+			# 	hosts => "elasticsearch:9200"
+			# 	# password => "${LOGSTASH_INTERNAL_PASSWORD}"
+			# 	# user => "logstash_internal"
+			# 	# data_stream => "true" # recommended for indexing time series datasets (such as logs, metrics, and events) into Elasticsearch
+			# 	index => "logstash-java-%{+YYYY.MM.dd}"
+			# }
+		}
+	}
+}

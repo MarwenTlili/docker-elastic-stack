@@ -1,0 +1,55 @@
+# Alert when some field changes between documents
+# This rule would alert on documents similar to the following:
+# {'username': 'bob', 'country_name': 'USA', '@timestamp': '2014-10-15T00:00:00'}
+# {'username': 'bob', 'country_name': 'Russia', '@timestamp': '2014-10-15T05:00:00'}
+# Because the user (query_key) bob logged in from different countries (compare_key) in the same day (timeframe)
+is_enabled: false
+
+# (Required)
+# Rule name, must be unique
+name: apache acces response 500 change
+
+# (Required)
+# Type of alert.
+# the change rule will alert when a certain field changes in two documents within a timeframe
+type: change
+
+# (Required)
+# Index to search, wildcard supported
+index: logstash-apache-access-*
+
+# (Required, change specific)
+# The field to look for changes in
+compare_key: response
+
+# (Required, change specific)
+# Ignore documents without the compare_key (country_name) field
+ignore_null: true
+
+# (Required, change specific)
+# The change must occur in two documents with the same query_key
+query_key: response
+
+# (Required, change specific)
+# The value of compare_key must change in two events that are less than timeframe apart to trigger an alert
+timeframe:
+  days: 1
+
+# (Required)
+# A list of Elasticsearch filters used for find events
+# These filters are joined with AND and nested in a filtered query
+# For more info: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html
+filter:
+- query:
+    query_string:
+      query: "response: 500"
+
+# (Required)
+# The alert is use when a match is found
+alert:
+- "email"
+
+# (required, email specific)
+# a list of email addresses to send alerts to
+email:
+- "whateverapis@gmail.com"

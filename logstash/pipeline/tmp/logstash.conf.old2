@@ -1,0 +1,79 @@
+input {
+	file {
+		type => "java"
+		path => [
+			"/usr/share/logstash/logs/erp/*.log"    # Make sure you provide the absolute path of the file here
+		]
+		codec => multiline {
+			pattern => "^(%{TIMESTAMP_ISO8601})"
+			negate => true
+			what => "previous"
+		}
+	}
+	file {
+		type => "apache"
+		path => [
+			"/usr/share/logstash/logs/apache/*.log"    # Make sure you provide the absolute path of the file here
+		]
+	}
+}
+
+filter {
+	# if ![ecs] {
+	# 	mutate {
+	# 		rename => ["host", "[host][name]" ]
+	# 		update => { "[ecs][version]" => "1.5.0" }
+	# 		add_tag => [ "ecs_converted" ]
+	# 	}
+	# }
+	if [type] == "java"{
+		if [message] =~ "\tat" {
+			grok {
+				match => ["message", "^(\tat)"]
+				add_tag => ["stacktrace"]
+			}
+		}
+		grok {
+			match => [ 
+				"message",
+				"(?<timestamp>%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME})%{SPACE}%{LOGLEVEL:level} %{NUMBER:pid} --- .+? :\s+(?<logmessage>.*)"
+			]
+		}
+		date {
+			match => [ "timestamp" , "yyyy-MM-dd HH:mm:ss.SSS" ]
+		}
+		mutate {
+			remove_field => ["message"]
+		}
+	}else if [type] == "apache"{
+		grok {
+			match => { 
+				# apache common log
+				"message" => '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:method} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)' 
+
+				# apache combined log
+				# %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request} (?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent}
+				# "message" => "%{COMBINEDAPACHELOG}"
+			}
+		}
+	}
+}
+
+output {
+	if [type] == "java"{
+		stdout { codec => rubydebug }
+		# if [level] in ["WARN", "ERROR", "INFO", "DEBUG"]{
+		# 	stdout { codec => rubydebug }
+		# 	# elasticsearch {
+		# 	# 	hosts => "elasticsearch:9200"
+		# 	# 	index => "logstash-java-%{+YYYY.MM.dd}"
+		# 	# }
+		# }
+	}else if [type] == "apache"{
+		# stdout { codec => rubydebug }
+		# elasticsearch {
+		# 	hosts => "elasticsearch:9200"
+		# 	index => "logstash-apache-%{+YYYY.MM.dd}"
+		# }
+	}
+}

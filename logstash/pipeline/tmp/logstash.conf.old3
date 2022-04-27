@@ -1,0 +1,132 @@
+input {
+	file {
+		type => "java"
+		path => [
+			"/usr/share/logstash/logs/erp/*.log"    # Make sure you provide the absolute path of the file here
+		]
+	}
+	file {
+		type => "apache"
+		path => [
+			"/usr/share/logstash/logs/apache/*.log"    # Make sure you provide the absolute path of the file here
+		]
+	}
+}
+
+filter {
+	if [type] == "java"{
+		# grok {
+		# patterns_dir => "./patterns"
+		# # check if the log line contains a date
+		# match => { "message" => "%{CUSTOM_CATALINALOG:catalinaLog}" }
+		# add_field => { "subType" => "timestamp" }
+		# remove_tag => ["_grokparsefailure"]
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => "./patterns"
+		# 	# check if the log line is has 'caused by'
+		# 	match => { "message" => "%{CUSTOM_TRACE_CAUSED_BY:causedbyText} %{GREEDYDATA:messageText}" }
+		# 	add_field => { "subType" => "cause" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => "./patterns"
+		# 	# check if the log line is an error trace
+		# 	match => { "message" => "%{CUSTOM_TRACE_ERROR:errorTrace} %{GREEDYDATA:messageText}" }
+		# 	add_field => { "subType" => "errorTrace" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => "./patterns"
+		# 	# check if the log line is a message
+		# 	match => { "message" => "%{CUSTOM_WARNINGLEVEL:warningLevel} %{GREEDYDATA:messageText}" }
+		# 	add_field => { "subType" => "warning" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => "./patterns"
+		# 	# check if the log line is an exception
+		# 	match => { "message" => "%{CUSTOM_TRACE_EXCEPTION:exceptionText} %{GREEDYDATA:messageText}" }
+		# 	match => { "message" => "%{CUSTOM_TRACE_EXCEPTION:exceptionText}" }
+		# 	add_field => { "subType" => "exception" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => ".patterns"
+		# 	# check if the log line is part of earlier 'exception' or 'caused by'
+		# 	match => { "message" => "%{CUSTOM_TRACE_OTHERS:messageText}" }
+		# 	add_field => { "subType" => "continuation" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+		# if "_grokparsefailure" in [tags] {
+		# grok {
+		# 	patterns_dir => "./patterns"
+		# 	# parse all other lines as 'unrecognizedText' so that it is not lost after parsing
+		# 	match => { "message" => "%{GREEDYDATA:unrecognizedText}" }
+		# 	add_field => { "subType" => "unrecognizedText" }
+		# 	remove_tag => ["_grokparsefailure"]
+		# }
+		# }
+
+		# mutate {
+		# gsub => ['message', "\t", " "]
+		# gsub => ['catalinaLog', "\t", " "]
+		# gsub => ['messageText', "\t", " "]
+		# gsub => ['exceptionText', "\t", " "]
+		# gsub => ['errorTrace', "\t", " "]
+		# gsub => ['unrecognizedText', "\t", " "]
+		# }
+
+		# ruby {
+		# code => "event['upload_time'] = event['@timestamp']"
+		# }
+
+		# mutate {
+		# add_field => ["upload_time_string", "%{@timestamp}"]
+		# }
+		
+	}else if [type] == "apache"{
+		grok {
+			match => { 
+				# apache common log
+				"message" => '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:method} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)' 
+
+				# apache combined log
+				# %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request} (?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent}
+				# "message" => "%{COMBINEDAPACHELOG}"
+			}
+		}
+	}
+}
+
+output {
+	if [type] == "java"{
+		if "_grokparsefailure" not in [tags] {
+			stdout { codec => rubydebug }
+		}
+		
+		# if [level] in ["WARN", "ERROR", "INFO", "DEBUG"]{
+		# 	stdout { codec => rubydebug }
+		# 	# elasticsearch {
+		# 	# 	hosts => "elasticsearch:9200"
+		# 	# 	index => "logstash-java-%{+YYYY.MM.dd}"
+		# 	# }
+		# }
+	}else if [type] == "apache"{
+		# stdout { codec => rubydebug }
+		# elasticsearch {
+		# 	hosts => "elasticsearch:9200"
+		# 	index => "logstash-apache-%{+YYYY.MM.dd}"
+		# }
+	}
+}

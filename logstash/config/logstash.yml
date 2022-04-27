@@ -1,0 +1,17 @@
+---
+## Default Logstash configuration from Logstash base image.
+## https://github.com/elastic/logstash/blob/master/docker/data/logstash/config/logstash-full.yml
+#
+http.host: "0.0.0.0"
+config.reload.automatic: true
+pipeline.ecs_compatibility: disabled
+config.support_escapes: true
+
+# xpack configs
+# xpack.monigoring.elasticsearchrul: "http://localhost:9200"
+# xpack.management.enable: true
+# xpack.management.elasticsearch.rul: "http://localhost:9200"
+# xpack.management.Logstash.poll_interval: 5s
+# xpack.management.pipeline.id: ["apache"]  #nginx
+# xpack.management.elasticsearch.username: ""
+# xpack.management.elasticsearch.password: ""
