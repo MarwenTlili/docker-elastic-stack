@@ -2,14 +2,27 @@
 # COMMONAPACHELOG %{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
 # COMBINEDAPACHELOG %{COMMONAPACHELOG} %{QS:referrer} %{QS:agent}
 
-MONTHNAMEFR (?:[Jj]an(?:vier)?|[Ff]ev(?:rier)?|[Mm]ar(?:s)?|[Aa]vr(?:il)?|[Mm]a(?:i)?|[Jj]u(?:n|in)?|[Jj]u(?:l|illet)?|[Aa]o(?:u|ût)?|[Ss]ep(?:tembre)?|[Oo]ct(?:obre)?|[Nn]ov(?:embre)?|[Dd](?:e|é)(?:c|cécembre)?)
-DATETIMECUSTOMFR %{MONTHNAMEFR}.%{SPACE}%{MONTHDAY},%{SPACE}%{INT}%{SPACE}%{TIME}%{SPACE}%{WORD}
+# sept. 02, 2019 2:46:50 PM
+#MONTHNAMEFR (?:[Jj]an(?:vier)?|[Ff]ev(?:rier)?|[Mm]ar(?:s)?|[Aa]vr(?:il)?|[Mm]a(?:i)?|[Jj]u(?:n|in)?|[Jj]u(?:l|illet)?|[Aa]o(?:u|ût)?|[Ss]ep(?:tembre)?|[Oo]ct(?:obre)?|[Nn]ov(?:embre)?|[Dd](?:e|é)(?:c|cécembre)?)
+#DATETIMECUSTOMFR %{MONTHNAMEFR}.%{SPACE}%{MONTHDAY},%{SPACE}%{INT}%{SPACE}%{TIME}%{SPACE}%{WORD}
 
 # [whatever]
 INDICE (?<=\[)[^]]+(?=\])
 
 # /whatever/...
-MODULE_NAME \/\S[^]]+
+MODULE_NAME (?<=\[\/)[^]]+(?=\])
+#MODULE_NAME \/\S[^]]+
+#MODULE_NAME ([\[\/](?<content>[^\]]*)[\]])?
 
 # find /ma-gpro-gpao-rest in /ma-gpro-gpao-rest/ordreFabrication/
-MODULE_NAME_URL (?=\/)\S+?(?=\/)
+MODULE_NAME_FROM_URL (?=\/)\S+?(?=\/)
+
+HTTPDATECUSTOM %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME}
+
+# catalina.*.log & localhost.*.log
+#%{DATETIMECATALINACUSTOMFR:logtimestamp}%{SPACE}%{JAVACLASS:javaclass}%{SPACE}%{WORD:method}%{NEWLINE}%{GRAVE:grave}%{NEWLINE}%{EXCEPTION:exception}
+#%{DATETIMECATALINACUSTOMFR:logtimestamp}%{SPACE}%{JAVACLASS:javaclass}%{SPACE}%{WORD:method}%{NEWLINE}%{GRAVE:grave}
+MONTHNAMECATALINAFR (?:janv|févr|mars|avr|mai|juin|juil|août|sept|oct|nov|déc)
+DATETIMECATALINACUSTOMFR %{MONTHNAMECATALINAFR}.%{SPACE}%{MONTHDAY},%{SPACE}%{INT}%{SPACE}%{TIME}%{SPACE}%{WORD}
+NEWLINE \r?\n
+CATALINAEXCEPTION (?m)^.*?Exception.*(?:\R+^\s*at .*)+

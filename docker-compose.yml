@@ -29,9 +29,9 @@ services:
       - elasticsearch:/usr/share/elasticsearch/data:z
     ports:
       - "9200:9200"
-      - "9300:9300"
+      - "9300:9300" # for transport_address
     environment:
-      ES_JAVA_OPTS: -Xmx256m -Xms256m # DON'T USE IT IN PRODUCTION
+      ES_JAVA_OPTS: -Xmx1g -Xms1g # DON'T USE IT IN PRODUCTION
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       discovery.type: single-node
     networks:
@@ -96,6 +96,7 @@ services:
       - elk
     restart: unless-stopped
     depends_on:
+      - elasticsearch
       - postfix
 
   postfix:
