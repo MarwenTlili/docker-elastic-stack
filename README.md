@@ -2,6 +2,7 @@
 
 Based on the official Docker images from Elastic:
 
+* [Filebeat](https://github.com/elastic/beats/tree/master/filebeat)
 * [Elasticsearch](https://github.com/elastic/elasticsearch/tree/master/distribution/docker)
 * [Logstash](https://github.com/elastic/logstash/tree/master/docker)
 * [Kibana](https://github.com/elastic/kibana/tree/master/src/dev/build/tasks/os_packages/docker_generator)
@@ -68,3 +69,10 @@ users are intialized with the values of the passwords defined in the [`.env`](.e
 first one is the [built-in superuser][builtin-users], the other two are used by Kibana and Logstash respectively to
 communicate with Elasticsearch. This task is only performed during the _initial_ startup of the stack. To change users'
 passwords _after_ they have been initialized, please refer to the instructions in the next section.*
+
+### Filebeat
+install it where the system you want to monitor, enable apache module (apache config example in filebeat/modules.d/apache.yml), then use filebeat.yml config provided in this repository
+```
+./filebeat modules enable apache
+./filebeat -c filebeat.yml -e
+```
