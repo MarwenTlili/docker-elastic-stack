@@ -47,8 +47,8 @@ services:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
       # attach logs directory as volume to logstash
-      - /home/vlad/workspace/logs/apache:/usr/share/logstash/logs/apache:ro,z
-      - /home/vlad/workspace/logs/erp:/usr/share/logstash/logs/erp:ro,z
+      # - /home/vlad/workspace/logs/apache:/usr/share/logstash/logs/apache:ro,z
+      # - /home/vlad/workspace/logs/erp:/usr/share/logstash/logs/erp:ro,z
       # patterns directory
       - ./logstash/patterns:/usr/share/logstash/patterns:rw,z
     ports:
@@ -57,7 +57,7 @@ services:
       - "5000:5000/udp"
       - "9600:9600"
     environment:
-      LS_JAVA_OPTS: -Xmx256m -Xms256m
+      LS_JAVA_OPTS: -Xmx512m -Xms512m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
     networks:
       - elk
@@ -81,39 +81,39 @@ services:
     depends_on:
       - elasticsearch
   
-  elastalert:
-    container_name: gpro-monitoring_elastalert
-    image: jertel/elastalert2:2.4.0
-    environment:
-      ES_HOST: ${ES_HOST}
-      ES_USERNAME: ${ES_USERNAME}
-      ES_PORT: ${ES_PORT}
-      ES_PASSWORD: ${ES_PASSWORD}
-    volumes:
-      - ./elastalert2/config.yaml:/opt/elastalert/config.yaml
-      - ./elastalert2/rules:/opt/elastalert/rules
-    networks: 
-      - elk
-    restart: unless-stopped
-    depends_on:
-      - elasticsearch
-      - postfix
+  # elastalert:
+  #   container_name: gpro-monitoring_elastalert
+  #   image: jertel/elastalert2:2.4.0
+  #   environment:
+  #     ES_HOST: ${ES_HOST}
+  #     ES_USERNAME: ${ES_USERNAME}
+  #     ES_PORT: ${ES_PORT}
+  #     ES_PASSWORD: ${ES_PASSWORD}
+  #   volumes:
+  #     - ./elastalert2/config.yaml:/opt/elastalert/config.yaml
+  #     - ./elastalert2/rules:/opt/elastalert/rules
+  #   networks: 
+  #     - elk
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - elasticsearch
+  #     - postfix
 
-  postfix:
-    container_name: gpro-monitoring_postfix
-    hostname: mail.gpro.com
-    build:
-      context: postfix/
-    environment:
-      MAILNAME: mail.gpro.com
-      # RELAYHOST_AUTH: yes
-      # RELAYHOST: smtp.gmail.com
-      # RELAYHOST_PASSWORDMAP: 
-    volumes:
-      - ./postfix/config/mail.cf:/etc/postfix/mail.cf:ro,Z
-      - ./postfix/sasl/sasl_passwd:/etc/postfix/sasl/sasl_passwd:ro,Z
-    networks:
-      - elk
+  # postfix:
+  #   container_name: gpro-monitoring_postfix
+  #   hostname: mail.gpro.com
+  #   build:
+  #     context: postfix/
+  #   environment:
+  #     MAILNAME: mail.gpro.com
+  #     # RELAYHOST_AUTH: yes
+  #     # RELAYHOST: smtp.gmail.com
+  #     # RELAYHOST_PASSWORDMAP: 
+  #   volumes:
+  #     - ./postfix/config/mail.cf:/etc/postfix/mail.cf:ro,Z
+  #     - ./postfix/sasl/sasl_passwd:/etc/postfix/sasl/sasl_passwd:ro,Z
+  #   networks:
+  #     - elk
   
 networks:
   elk:

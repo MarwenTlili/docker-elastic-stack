@@ -10,7 +10,8 @@
 INDICE (?<=\[)[^]]+(?=\])
 
 # /whatever/...
-MODULE_NAME (?<=\[\/)[^]]+(?=\])
+MODULE_NAME (?<=\[\/).*?(?=\]|\/)
+#MODULE_NAME (?<=\[\/)[^\]]+(?=\])
 #MODULE_NAME \/\S[^]]+
 #MODULE_NAME ([\[\/](?<content>[^\]]*)[\]])?
 

@@ -19,6 +19,7 @@ filebeat.inputs:
 
 - type: log
   enabled: true
+  close_inactive: 5m # default 5m
   paths:
     - /home/vlad/workspace/logs/catalina/catalina.*.log
   fields:
@@ -31,9 +32,9 @@ filebeat.inputs:
   multiline.max_lines: 500 #default 500
 
 - type: log
-  enabled: false
+  enabled: true
   paths:
-    - /home/vlad/workspace/logs/localhost.*.log
+    - /home/vlad/workspace/logs/localhost/localhost.*.log
   fields:
     type: "localhost"
 
@@ -188,10 +189,10 @@ setup.template.settings:
   #password: "changeme"
 
 # ------------------------------ Logstash Output -------------------------------
-output.logstash:
+# output.logstash:
   # The Logstash hosts
-  hosts: ["localhost:5044"]
-  index: filebeat
+  # hosts: ["localhost:5044"]
+  # index: filebeat
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
