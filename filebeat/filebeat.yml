@@ -19,7 +19,6 @@ filebeat.inputs:
 
 - type: log
   enabled: true
-  close_inactive: 5m # default 5m
   paths:
     - /home/vlad/workspace/logs/catalina/catalina.*.log
   fields:
@@ -30,6 +29,7 @@ filebeat.inputs:
   multiline.match: after
   multiline.timeout: 5s #default 5s
   multiline.max_lines: 500 #default 500
+  close_inactive: 5m # default 5m
 
 - type: log
   enabled: true
@@ -37,6 +37,14 @@ filebeat.inputs:
     - /home/vlad/workspace/logs/localhost/localhost.*.log
   fields:
     type: "localhost"
+    multiline.type: pattern
+  multiline.pattern: '.*[0-9]{1,2}:[0-9]{2}:[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+  multiline.timeout: 5s #default 5s
+  multiline.max_lines: 500 #default 500
+  close_inactive: 5m # default 5m
+
 
 # - type: log
 #   enabled: false
@@ -189,9 +197,9 @@ setup.template.settings:
   #password: "changeme"
 
 # ------------------------------ Logstash Output -------------------------------
-# output.logstash:
+output.logstash:
   # The Logstash hosts
-  # hosts: ["localhost:5044"]
+  hosts: ["localhost:5044"]
   # index: filebeat
 
   # Optional SSL. By default is off.
@@ -203,6 +211,35 @@ setup.template.settings:
 
   # Client Certificate Key
   #ssl.key: "/etc/pki/client/cert.key"
+
+# -------------------------------- Kafka Output --------------------------------
+# output.kafka:
+#   enabled: true
+#   hosts: ["localhost:9092"]
+#   topic: 'filebeat-events'
+#   partition.round_robin:
+#     reachable_only: false
+#   required_acks: 1
+#   max_message_bytes: 1000000
+#   ssl.verification_mode: none
+  # compression: gzip
+  #username: ''
+  #password: ''
+  # codec.format:
+  #   string: '%{[@timestamp]} %{[message]}'
+
+# ------------------------------- Console Output -------------------------------
+#output.console:
+  # Boolean flag to enable or disable the output module.
+  #enabled: true
+
+  # Configure JSON encoding
+  #codec.json:
+    # Pretty-print JSON event
+    #pretty: false
+
+    # Configure escaping HTML symbols in strings.
+    #escape_html: false
 
 # ================================= Processors =================================
 processors:
