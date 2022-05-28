@@ -16,7 +16,9 @@ MODULE_NAME (?<=\[\/).*?(?=\]|\/)
 #MODULE_NAME ([\[\/](?<content>[^\]]*)[\]])?
 
 # find /ma-gpro-gpao-rest in /ma-gpro-gpao-rest/ordreFabrication/
-MODULE_NAME_FROM_URL (?=\/)\S+?(?=\/)
+#MODULE_NAME_FROM_URL (?=\/)\S+?(?=\/)  BAD
+MODULE_NAME_FROM_URL \/.[^\/ ]*
+
 
 HTTPDATECUSTOM %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME}
 
