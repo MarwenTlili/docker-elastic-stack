@@ -18,7 +18,7 @@ filebeat.inputs:
 # Below are the input specific configurations.
 
 - type: log
-  enabled: true
+  enabled: false
   paths:
     - /home/vlad/workspace/logs/catalina/catalina.*.log
   fields:
@@ -32,7 +32,7 @@ filebeat.inputs:
   close_inactive: 5m # default 5m
 
 - type: log
-  enabled: true
+  enabled: false
   paths:
     - /home/vlad/workspace/logs/localhost/localhost.*.log
   fields:
@@ -200,6 +200,9 @@ setup.template.settings:
 output.logstash:
   # The Logstash hosts
   hosts: ["localhost:5044"]
+  bulk_max_size: 8192
+  loadbalance: true
+  workers: 4
   # index: filebeat
 
   # Optional SSL. By default is off.
@@ -229,14 +232,14 @@ output.logstash:
   #   string: '%{[@timestamp]} %{[message]}'
 
 # ------------------------------- Console Output -------------------------------
-#output.console:
-  # Boolean flag to enable or disable the output module.
-  #enabled: true
+# output.console:
+#   # Boolean flag to enable or disable the output module.
+#   enabled: true
 
-  # Configure JSON encoding
-  #codec.json:
-    # Pretty-print JSON event
-    #pretty: false
+  # # Configure JSON encoding
+  # codec.json:
+  #   # Pretty-print JSON event
+  #   pretty: true
 
     # Configure escaping HTML symbols in strings.
     #escape_html: false
