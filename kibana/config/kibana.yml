@@ -11,8 +11,7 @@ monitoring.ui.container.elasticsearch.enabled: true
 
 # kibana_system: log in to Kibana as the elastic superuser
 elasticsearch.username: kibana_system
-# you better use kibana key store
-# elasticsearch.password: 
+elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
 
 # xpack.encryptedSavedObjects.encryptionKey: fce8762dcda80d158475a31567734d89
 # xpack.reporting.encryptionKey: 0162c2205d0297093cbb737ce4ce3fa5

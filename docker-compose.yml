@@ -1,32 +1,16 @@
 version: '3.7'
 
 services:
-  setup:
-    container_name: gpro-monitoring_setup
-    build:
-      context: setup/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
-    init: true
-    volumes:
-      - setup:/state:Z
-    environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-    networks:
-      - elk
-
   elasticsearch:
-    container_name: gpro-monitoring_elasticsearch
+    container_name: elasticsearch
     hostname: ${ES_HOST}
     build:
       context: elasticsearch/
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,z
-      - elasticsearch:/usr/share/elasticsearch/data:z
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/data:/usr/share/elasticsearch/data:z
     ports:
       - "9200:9200"
       - "9300:9300" # for transport_address
@@ -34,11 +18,12 @@ services:
       ES_JAVA_OPTS: -Xmx1g -Xms1g # DON'T USE IT IN PRODUCTION
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       discovery.type: single-node
+      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
     networks:
       - elk
 
   logstash:
-    container_name: gpro-monitoring_logstash
+    container_name: logstash
     build:
       context: logstash/
       args:
@@ -46,10 +31,6 @@ services:
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
-      # attach logs directory as volume to logstash
-      # - /home/vlad/workspace/logs/apache:/usr/share/logstash/logs/apache:ro,z
-      # - /home/vlad/workspace/logs/erp:/usr/share/logstash/logs/erp:ro,z
-      # patterns directory
       - ./logstash/patterns:/usr/share/logstash/patterns:rw,z
     ports:
       - "5044:5044"
@@ -59,13 +40,14 @@ services:
     environment:
       LS_JAVA_OPTS: -Xmx512m -Xms512m
       LOGSTASH_KEYSTORE_PASS: ${LOGSTASH_KEYSTORE_PASS}
+      ES_LOGSTASH_INTERNAL_PWD: ${ES_LOGSTASH_INTERNAL_PWD}
     networks:
       - elk
     depends_on:
       - elasticsearch
 
   kibana:
-    container_name: gpro-monitoring_kibana
+    container_name: kibana
     build:
       context: kibana/
       args:
@@ -74,46 +56,12 @@ services:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
       - "5601:5601"
-    # environment:
-    #   KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-} # better use kibana-keystore
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-} # better use kibana-keystore
     networks:
       - elk
     depends_on:
       - elasticsearch
-  
-  # elastalert:
-  #   container_name: gpro-monitoring_elastalert
-  #   image: jertel/elastalert2:2.4.0
-  #   environment:
-  #     ES_HOST: ${ES_HOST}
-  #     ES_USERNAME: ${ES_USERNAME}
-  #     ES_PORT: ${ES_PORT}
-  #     ES_PASSWORD: ${ES_PASSWORD}
-  #   volumes:
-  #     - ./elastalert2/config.yaml:/opt/elastalert/config.yaml
-  #     - ./elastalert2/rules:/opt/elastalert/rules
-  #   networks: 
-  #     - elk
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - elasticsearch
-  #     - postfix
-
-  # postfix:
-  #   container_name: gpro-monitoring_postfix
-  #   hostname: mail.gpro.com
-  #   build:
-  #     context: postfix/
-  #   environment:
-  #     MAILNAME: mail.gpro.com
-  #     # RELAYHOST_AUTH: yes
-  #     # RELAYHOST: smtp.gmail.com
-  #     # RELAYHOST_PASSWORDMAP: 
-  #   volumes:
-  #     - ./postfix/config/mail.cf:/etc/postfix/mail.cf:ro,Z
-  #     - ./postfix/sasl/sasl_passwd:/etc/postfix/sasl/sasl_passwd:ro,Z
-  #   networks:
-  #     - elk
   
 networks:
   elk:
