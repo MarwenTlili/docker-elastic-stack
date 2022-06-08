@@ -62,7 +62,62 @@ services:
       - elk
     depends_on:
       - elasticsearch
+
+  zookeeper:
+    image: 'bitnami/zookeeper:${ZOOKEEPER_VERSION}'
+    container_name: zookeeper
+    hostname: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      # - ALLOW_ANONYMOUS_LOGIN=no  #YES NOT RECOMMENDED IN PRODUCTION
+      - ZOO_ENABLE_AUTH=${ZOO_ENABLE_AUTH}
+      - ZOO_SERVER_USERS=${ZOO_SERVER_USERS}
+      - ZOO_SERVER_PASSWORDS=${ZOO_SERVER_PASSWORDS}
+    networks:
+      - elk
   
+  kafka:
+    image: 'bitnami/kafka:${KAFKA_VERSION}'
+    container_name: kafka
+    hostname: kafka.gproconsulting.com
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+
+    environment:
+      # Basic config
+      # - BITNAMI_DEBUG=true 
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+
+      - KAFKA_ZOOKEEPER_PROTOCOL=${KAFKA_ZOOKEEPER_PROTOCOL}
+      - KAFKA_ZOOKEEPER_USER=${KAFKA_ZOOKEEPER_USER}
+      - KAFKA_ZOOKEEPER_PASSWORD=${KAFKA_ZOOKEEPER_PASSWORD}
+
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SSL,CLIENT:SASL_SSL
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9093,CLIENT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,CLIENT://kafka:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+
+      - KAFKA_CLIENT_USERS=${KAFKA_CLIENT_USERS}
+      - KAFKA_CLIENT_PASSWORDS=${KAFKA_CLIENT_PASSWORDS}
+
+      - KAFKA_CERTIFICATE_PASSWORD=${KAFKA_CERTIFICATE_PASSWORD}
+      - KAFKA_TLS_TYPE=JKS # or PEM
+
+      - KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=${KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM}  # empty string "" to disable host name verification
+
+    volumes:
+      # Both .jks and .pem files are supported
+      - './kafka/certs/keystore/kafka.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro'
+      - './kafka/certs/truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
+    
+    depends_on:
+      - zookeeper
+    networks:
+      - elk
+
 networks:
   elk:
     driver: bridge

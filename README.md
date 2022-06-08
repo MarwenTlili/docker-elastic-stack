@@ -7,6 +7,8 @@ Based on the official Docker images from Elastic:
 * [Logstash](https://github.com/elastic/logstash/tree/master/docker)
 * [Kibana](https://github.com/elastic/kibana/tree/master/src/dev/build/tasks/os_packages/docker_generator)
 * [Elastalert2](https://github.com/jertel/elastalert2)
+* [Zookeeper](https://hub.docker.com/r/bitnami/zookeeper)
+* [Kafka](https://hub.docker.com/r/bitnami/kafka)
 
 ## Requirements
 
@@ -42,6 +44,27 @@ LOGSTASH_INTERNAL_PASSWORD='logstash'
 KIBANA_SYSTEM_PASSWORD='kibana'  
 # postfix  
 HOSTNAME='mail.gpro.com'  
+  
+# zookeeper  
+ZOOKEEPER_VERSION=3.5   # latest stable  
+ZOO_ENABLE_AUTH=yes  
+ZOO_SERVER_USERS=yourzookeeperuser  
+ZOO_SERVER_PASSWORDS=yourzookeeperpassword  
+  
+# kafka  
+KAFKA_VERSION=3.2   # latest stable 3.2  
+KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181  
+  
+KAFKA_ZOOKEEPER_PROTOCOL=SASL  
+KAFKA_ZOOKEEPER_USER=yourzookeeperuser  
+KAFKA_ZOOKEEPER_PASSWORD=yourzookeeperpassword  
+  
+KAFKA_CLIENT_USERS=filebeat  
+KAFKA_CLIENT_PASSWORDS=yourfilebeatclientpassword  
+  
+KAFKA_CERTIFICATE_PASSWORD=passowrd_used_to_generate_keystore  
+KAFKA_TLS_TYPE=JKS # or PEM  
+KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=''  # empty string "" to disable host name verification  
 ```
 
 ## Usage
@@ -76,3 +99,11 @@ install it where the system you want to monitor, enable apache module (apache co
 ./filebeat modules enable apache
 ./filebeat -c filebeat.yml -e
 ```
+
+### Kafka
+To generate kafka.trustkey.jks you can use this script:  
+https://raw.githubusercontent.com/confluentinc/confluent-platform-security-tools/master/kafka-generate-ssl.sh
+```
+./kafka-generate-ssl.sh
+```
+

@@ -1,2 +1,4 @@
 tmp/
 elasticsearch/data
+kafka/
+zookeeper/
