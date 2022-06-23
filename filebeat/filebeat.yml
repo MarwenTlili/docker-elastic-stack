@@ -116,8 +116,8 @@ filebeat.config.modules:
 
 # ======================= Elasticsearch template setting =======================
 
-setup.template.settings:
-  index.number_of_shards: 1
+# setup.template.settings:
+#   index.number_of_shards: 1
   #index.codec: best_compression
   #_source.enabled: false
 
@@ -197,13 +197,14 @@ setup.template.settings:
   #password: "changeme"
 
 # ------------------------------ Logstash Output -------------------------------
-output.logstash:
-  # The Logstash hosts
-  hosts: ["localhost:5044"]
-  bulk_max_size: 8192
-  loadbalance: true
-  workers: 4
-  # index: filebeat
+# output.logstash:
+#   enabled: false
+#   # The Logstash hosts
+#   hosts: ["localhost:5044"]
+#   bulk_max_size: 8192
+#   loadbalance: true
+#   workers: 4
+#   # index: filebeat
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
@@ -216,18 +217,20 @@ output.logstash:
   #ssl.key: "/etc/pki/client/cert.key"
 
 # -------------------------------- Kafka Output --------------------------------
-# output.kafka:
-#   enabled: true
-#   hosts: ["localhost:9092"]
-#   topic: 'filebeat-events'
-#   partition.round_robin:
-#     reachable_only: false
-#   required_acks: 1
-#   max_message_bytes: 1000000
-#   ssl.verification_mode: none
-  # compression: gzip
-  #username: ''
-  #password: ''
+output.kafka:
+  enabled: true
+  hosts: ["localhost:9092"]
+  topic: 'filebeat-events'
+  partition.round_robin:
+    reachable_only: false
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000
+  username: filebeat
+  password: weff7j0v4iPInn
+  sasl.mechanism: SCRAM-SHA-256
+  # security_protocol: PLAINTEXT
+
   # codec.format:
   #   string: '%{[@timestamp]} %{[message]}'
 
