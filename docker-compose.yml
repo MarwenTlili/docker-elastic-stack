@@ -95,9 +95,13 @@ services:
       - KAFKA_BROKER_ID=1
       - ALLOW_PLAINTEXT_LISTENER=no
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # key/value pairs for the security protocol to use per listener name
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      # list of listeners and the host/IP and port to which Kafka binds to for listening
       - KAFKA_CFG_LISTENERS=INTERNAL://:9093,EXTERNAL://:9092
+      # list of listeners with their host/IP and port
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://:9093,EXTERNAL://localhost:9092
+      # define which listener to use, for Kafka brokers communicate between themselves
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=EXTERNAL
       - KAFKA_INTER_BROKER_USER=${KAFKA_INTER_BROKER_USER}            # inter broker communication user
       - KAFKA_INTER_BROKER_PASSWORD=${KAFKA_INTER_BROKER_PASSWORD}
