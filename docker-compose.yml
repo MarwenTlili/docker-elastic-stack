@@ -30,6 +30,7 @@ services:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/config/kafka/kafka_jaas.conf:/usr/share/logstash/config/kafka/kafka_jaas.conf:ro,Z
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
       - ./logstash/patterns:/usr/share/logstash/patterns:rw,z
     ports:
@@ -78,7 +79,7 @@ services:
       - ZOO_SERVER_USERS=${ZOO_SERVER_USERS}
       - ZOO_SERVER_PASSWORDS=${ZOO_SERVER_PASSWORDS}
     volumes:
-      - './zookeeper:/bitnami/zookeeper'
+      - zookeeper-data:/bitnami/zookeeper
     networks:
       - elk
   
@@ -124,5 +125,6 @@ networks:
 
 volumes:
   elasticsearch:
+  zookeeper-data:
   kafka-data:
   kafka-config:
