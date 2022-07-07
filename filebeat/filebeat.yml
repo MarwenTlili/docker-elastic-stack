@@ -18,7 +18,7 @@ filebeat.inputs:
 # Below are the input specific configurations.
 
 - type: log
-  enabled: false
+  enabled: true
   paths:
     - /home/vlad/workspace/logs/catalina/catalina.*.log
   fields:
@@ -32,7 +32,7 @@ filebeat.inputs:
   close_inactive: 5m # default 5m
 
 - type: log
-  enabled: false
+  enabled: true
   paths:
     - /home/vlad/workspace/logs/localhost/localhost.*.log
   fields:

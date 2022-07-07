@@ -8,8 +8,8 @@
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
     #var.paths:
-    #var.paths: ["/home/vlad/workspace/logs/localhost_access_log/localhost_access_log.*.txt"]
-    var.paths: ["/var/log/apache2/access.log"]
+    var.paths: ["/home/vlad/workspace/logs/localhost_access_log/localhost_access_log.*.txt"]
+    # var.paths: ["/var/log/apache2/access.log"]
   # Error logs
   error:
     enabled: false
