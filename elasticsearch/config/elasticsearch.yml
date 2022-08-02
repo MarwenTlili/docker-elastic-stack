@@ -24,3 +24,7 @@ discovery.type: single-node
 #           port: 587
 #           user: whateverapis@gmail.com
 #           password: 7dcTsb3iTj3Y
+
+path:
+  repo:
+    - /mnt/backups

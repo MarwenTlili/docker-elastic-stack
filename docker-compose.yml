@@ -11,6 +11,7 @@ services:
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
       - ./elasticsearch/data:/usr/share/elasticsearch/data:z
+      - ./elasticsearch/backups:/mnt/backups:z
     ports:
       - "9200:9200"
       - "9300:9300" # for transport_address
