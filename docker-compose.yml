@@ -1,39 +1,141 @@
 version: '3.7'
 
 services:
-  elasticsearch:
-    container_name: elasticsearch
-    hostname: ${ES_HOST}
-    build:
-      context: elasticsearch/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+  #############################################################################
+  # es01 - master node
+  #############################################################################
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es01
+    hostname: es01
+    # user: "1000"
+    environment:
+      - discovery.seed_hosts=es02,es03,es04,es05      # list of the addresses of the master-eligible nodes in the cluster.
+      - cluster.initial_master_nodes=es01             # Identify the initial master nodes by their node.name
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"              # NOT RECOMMENDED IN PRODUCTION.
+      - ES_PATH_CONF=/usr/share/elasticsearch/config  # default in container: /usr/share/elasticsearch/config
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}        # password for elastic-keystore  
+    mem_limit: ${MEM_LIMIT}
     volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
-      - ./elasticsearch/data:/usr/share/elasticsearch/data:z
+      - es01_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/certs/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:z
+      # elastic-stack-ca.p12: contains the public certificate for your CA and the private key used to sign certificates for each node
+      - ./elasticsearch/certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12:z
+      # elastic-certificates.p12: is a keystore contains a node certificate, node key, and CA certificate.
+      - ./elasticsearch/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:z
+      #http.p12 Keystore that contains the key and certificate for the HTTP layer for this node.
+      - ./elasticsearch/certs/elasticsearch-ssl-http/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12:z
       - ./elasticsearch/backups:/mnt/backups:z
     ports:
-      - "9200:9200"
-      - "9300:9300" # for transport_address
-    environment:
-      ES_JAVA_OPTS: -Xmx1g -Xms1g # DON'T USE IT IN PRODUCTION
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      discovery.type: single-node
-      KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
+      - "${ES_PORT}:9200"
+      - "9300:9300"   # for transport address
     networks:
       - elk
-
-  logstash:
-    container_name: logstash
-    build:
-      context: logstash/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
+  #############################################################################
+  # es02 - data node
+  #############################################################################
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es02
+    hostname: es02
+    environment:
+      - discovery.seed_hosts=es01,es03,es04,es05
+      - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # NOT RECOMMENDED IN PRODUCTION.
+      - ES_PATH_CONF=/usr/share/elasticsearch/config
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+    mem_limit: ${MEM_LIMIT}
     volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
-      - ./logstash/config/kafka/kafka_jaas.conf:/usr/share/logstash/config/kafka/kafka_jaas.conf:ro,Z
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
-      - ./logstash/patterns:/usr/share/logstash/patterns:rw,z
+      - es02_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/certs/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:z
+      # elastic-certificates.p12: is a keystore contains a node certificate, node key, and CA certificate.
+      - ./elasticsearch/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:z
+      #http.p12 Keystore that contains the key and certificate for the HTTP layer for this node.
+      - ./elasticsearch/certs/elasticsearch-ssl-http/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12:z
+      - ./elasticsearch/backups:/mnt/backups:z
+    networks:
+      - elk
+  #############################################################################
+  # es03 - ml, remote_cluster_client node
+  #############################################################################
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es03
+    hostname: es03
+    environment:
+      - discovery.seed_hosts=es01,es02,es04,es05
+      - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # NOT RECOMMENDED IN PRODUCTION.
+      - ES_PATH_CONF=/usr/share/elasticsearch/config
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+    mem_limit: ${MEM_LIMIT}
+    volumes:
+      - es03_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/certs/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:z
+      # elastic-certificates.p12: is a keystore contains a node certificate, node key, and CA certificate.
+      - ./elasticsearch/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:z
+      #http.p12 Keystore that contains the key and certificate for the HTTP layer for this node.
+      - ./elasticsearch/certs/elasticsearch-ssl-http/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12:z
+    networks:
+      - elk
+  #############################################################################
+  # es04 - ingest node
+  #############################################################################
+  es04:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es04
+    hostname: es04
+    environment:
+      - discovery.seed_hosts=es01,es02,es03,es05
+      - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # NOT RECOMMENDED IN PRODUCTION.
+      - ES_PATH_CONF=/usr/share/elasticsearch/config
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+    mem_limit: ${MEM_LIMIT}
+    volumes:
+      - es04_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es04/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/certs/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:z
+      # elastic-certificates.p12: is a keystore contains a node certificate, node key, and CA certificate.
+      - ./elasticsearch/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:z
+      #http.p12 Keystore that contains the key and certificate for the HTTP layer for this node.
+      - ./elasticsearch/certs/elasticsearch-ssl-http/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12:z
+    networks:
+      - elk
+  #############################################################################
+  # es05 - coordinating only node
+  #############################################################################
+  es05:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es05
+    hostname: es05
+    environment:
+      - discovery.seed_hosts=es01,es02,es03,es04
+      - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # NOT RECOMMENDED IN PRODUCTION.
+      - ES_PATH_CONF=/usr/share/elasticsearch/config
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+    mem_limit: ${MEM_LIMIT}
+    volumes:
+      - es05_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es05/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:z
+      - ./elasticsearch/certs/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:z
+      # elastic-certificates.p12: is a keystore contains a node certificate, node key, and CA certificate.
+      - ./elasticsearch/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:z
+      #http.p12 Keystore that contains the key and certificate for the HTTP layer for this node.
+      - ./elasticsearch/certs/elasticsearch-ssl-http/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12:z
+    networks:
+      - elk
+  #####################################################################################################################
+  # logstash: data collection engine - real-time pipelining - unify data from - normalize the data into destinations
+  #####################################################################################################################
+  logstash:
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    container_name: logstash
+    hostname: logstash
     ports:
       - "5044:5044"
       - "5000:5000/tcp"
@@ -42,31 +144,47 @@ services:
     environment:
       LS_JAVA_OPTS: -Xmx512m -Xms512m
       LOGSTASH_KEYSTORE_PASS: ${LOGSTASH_KEYSTORE_PASS}
-      ES_LOGSTASH_INTERNAL_PWD: ${ES_LOGSTASH_INTERNAL_PWD}
+      # ES_LOGSTASH_INTERNAL_PWD: ${ES_LOGSTASH_INTERNAL_PWD}
+      # ES_LOGSTASH_SYSTEM_PWD: ${ES_LOGSTASH_SYSTEM_PWD}
       KAFKA_HOST: kafka.gproconsulting.com
-    networks:
-      - elk
-    depends_on:
-      - elasticsearch
-      - kafka
-
-  kibana:
-    container_name: kibana
-    build:
-      context: kibana/
-      args:
-        ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
-      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
-    ports:
-      - "5601:5601"
-    environment:
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-} # better use kibana-keystore
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/config/kafka/kafka_jaas.conf:/usr/share/logstash/config/kafka/kafka_jaas.conf:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+      - ./logstash/patterns:/usr/share/logstash/patterns:rw,z
+      - ./logstash/config/certs:/usr/share/logstash/config/certs:z
+      - ./logstash/config/logstash.keystore:/usr/share/logstash/config/logstash.keystore
     networks:
       - elk
     depends_on:
-      - elasticsearch
-
+      - es01
+      # - kafka
+  #####################################################################################################################
+  # kibana: search, observe, analyze your data - Manage, monitor, and secure the Elastic Stack
+  #####################################################################################################################
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    container_name: kibana
+    environment:
+      - SERVER_NAME=kibana
+      - SERVER_HOST=kibana
+      - ELASTICSEARCH_HOSTS=["https://es01:9200"]
+      - KBN_PATH_CONF=/usr/share/kibana/config
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:z
+      - ./kibana/config/kibana.keystore:/usr/share/kibana/config/kibana.keystore:z
+      - ./kibana/config/elasticsearch-ca.pem:/usr/share/kibana/config/elasticsearch-ca.pem:z
+      - ./kibana/config/kibana-server.crt:/usr/share/kibana/config/kibana-server.crt:z
+      - ./kibana/config/kibana-server.key:/usr/share/kibana/config/kibana-server.key:z
+    ports:
+      - "${KIBANA_PORT}:5601"
+    networks: 
+      - elk
+    depends_on:
+      - es01
+  #####################################################################################################################
+  # zookeeper: store kafka metadata [location of partitions, configuration of topics]
+  #####################################################################################################################
   zookeeper:
     image: 'bitnami/zookeeper:${ZOOKEEPER_VERSION}'
     container_name: zookeeper
@@ -83,7 +201,9 @@ services:
       - zookeeper-data:/bitnami/zookeeper
     networks:
       - elk
-  
+  #####################################################################################################################
+  # kafka: 
+  #####################################################################################################################
   kafka:
     image: 'bitnami/kafka:${KAFKA_VERSION}'
     container_name: kafka
@@ -123,13 +243,23 @@ services:
       - zookeeper
     networks:
       - elk
+  #####################################################################################################################
 
 networks:
   elk:
     driver: bridge
 
 volumes:
-  elasticsearch:
+  es01_data:
+    driver: local
+  es02_data:
+    driver: local
+  es03_data:
+    driver: local
+  es04_data:
+    driver: local
+  es05_data:
+    driver: local
   zookeeper-data:
   kafka-data:
   kafka-config:

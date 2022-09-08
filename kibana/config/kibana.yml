@@ -1,18 +1,24 @@
----
-## Default Kibana configuration from Kibana base image.
-## https://github.com/elastic/kibana/blob/master/src/dev/build/tasks/os_packages/docker_generator/templates/kibana_yml.template.ts
 #
-server.name: kibana
-server.host: 0.0.0.0
-elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+# ** THIS IS AN AUTO-GENERATED FILE **
+#
+
+# Default Kibana configuration for docker target
+server.host: "0.0.0.0"
+server.shutdownTimeout: "5s"
+
+# defined in docker-compose environment: ELASTICSEARCH_HOSTS
+# elasticsearch.hosts: [ "https://es01:9200" ]
+
 monitoring.ui.container.elasticsearch.enabled: true
 
-## X-Pack security credentials
+elasticsearch.username: "kibana_system"
+# password for "kibana_system" defined in kibana-keystore as "elasticsearch.password"
 
-# kibana_system: log in to Kibana as the elastic superuser
-elasticsearch.username: kibana_system
-elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
+# secure elastic-kibana
+elasticsearch.ssl.certificateAuthorities: ${KBN_PATH_CONF}/elasticsearch-ca.pem
+elasticsearch.ssl.verificationMode: full  # default: full, options: none
 
-# xpack.encryptedSavedObjects.encryptionKey: fce8762dcda80d158475a31567734d89
-# xpack.reporting.encryptionKey: 0162c2205d0297093cbb737ce4ce3fa5
-# xpack.security.encryptionKey: 79a9438331403376eac7755637319d25
+# secure brower-kibana
+server.ssl.enabled: true
+server.ssl.certificate: ${KBN_PATH_CONF}/kibana-server.crt
+server.ssl.key: ${KBN_PATH_CONF}/kibana-server.key

@@ -1,5 +1,6 @@
 tmp/
 elasticsearch/data
 elasticsearch/backups
+elasticsearch/shared/backups
 kafka/
 zookeeper/

@@ -18,7 +18,7 @@ filebeat.inputs:
 # Below are the input specific configurations.
 
 - type: log
-  enabled: true
+  enabled: false
   paths:
     - /home/vlad/workspace/logs/catalina/catalina.*.log
   fields:
@@ -32,7 +32,7 @@ filebeat.inputs:
   close_inactive: 5m # default 5m
 
 - type: log
-  enabled: true
+  enabled: false
   paths:
     - /home/vlad/workspace/logs/localhost/localhost.*.log
   fields:
@@ -197,13 +197,13 @@ filebeat.config.modules:
   #password: "changeme"
 
 # ------------------------------ Logstash Output -------------------------------
-# output.logstash:
-#   enabled: false
-#   # The Logstash hosts
-#   hosts: ["localhost:5044"]
-#   bulk_max_size: 8192
-#   loadbalance: true
-#   workers: 4
+output.logstash:
+  enabled: false
+  # The Logstash hosts
+  hosts: ["localhost:5044"]
+  bulk_max_size: 8192
+  loadbalance: true
+  workers: 4
 #   # index: filebeat
 
   # Optional SSL. By default is off.
@@ -219,16 +219,16 @@ filebeat.config.modules:
 # -------------------------------- Kafka Output --------------------------------
 output.kafka:
   enabled: true
-  hosts: ["localhost:9092"]
+  hosts: '${FILEBEAT_KAFKA_HOSTS}'
   topic: 'filebeat-events'
   partition.round_robin:
     reachable_only: false
   required_acks: 1
   compression: gzip
   max_message_bytes: 1000000
-  username: filebeat
-  password: weff7j0v4iPInn
-  sasl.mechanism: SCRAM-SHA-256
+  username: ${FILEBEAT_OUTPUT_KAFKA_USERNAME}
+  password: ${FILEBEAT_OUTPUT_KAFKA_PASSWORD}
+  sasl.mechanism: ${FILEBEAT_OUTPUT_KAFKA_SASL_MECHANISM}
   # security_protocol: PLAINTEXT
 
   # codec.format:

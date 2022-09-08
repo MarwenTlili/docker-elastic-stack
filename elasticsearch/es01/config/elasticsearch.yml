@@ -1,0 +1,33 @@
+
+---
+## Default Elasticsearch configuration from Elasticsearch base image.
+## https://github.com/elastic/elasticsearch/blob/master/distribution/docker/src/docker/config/elasticsearch.yml
+#
+cluster.name: "es-docker-cluster"
+# default:0.0.0.0, _site_:192.168.0.1, _global_:8.8.8.8, _[networkInterface]_:_en0_
+network.host: 0.0.0.0
+
+path:
+  data:  /usr/share/elasticsearch/data
+  logs: /usr/share/elasticsearch/logs
+  repo:
+    - /mnt/backups
+
+node.name: es01
+
+node.roles: [ master ]
+
+# minimul security
+xpack.security.enabled: true
+
+# basic security
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate 
+xpack.security.transport.ssl.client_authentication: required
+xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: http.p12
+
+# to resolve executing command "like: elasticsearch-setup-passwords auto" from node terminal
+xpack.security.http.ssl.verification_mode: certificate
