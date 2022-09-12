@@ -25,7 +25,7 @@ HTTPDATECUSTOM %{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME}
 # catalina.*.log & localhost.*.log
 #%{DATETIMECATALINACUSTOMFR:logtimestamp}%{SPACE}%{JAVACLASS:javaclass}%{SPACE}%{WORD:method}%{NEWLINE}%{GRAVE:grave}%{NEWLINE}%{EXCEPTION:exception}
 #%{DATETIMECATALINACUSTOMFR:logtimestamp}%{SPACE}%{JAVACLASS:javaclass}%{SPACE}%{WORD:method}%{NEWLINE}%{GRAVE:grave}
-MONTHNAMECATALINAFR (?:janv|févr|mars|avr|mai|juin|juil|août|sept|oct|nov|déc)
-DATETIMECATALINACUSTOMFR %{MONTHNAMECATALINAFR}.%{SPACE}%{MONTHDAY},%{SPACE}%{INT:log-year}%{SPACE}%{TIME}%{SPACE}%{WORD}
+MONTHNAMECATALINAFR (?:janv.|févr.|mars.|avr.|mai.|juin.|juil.|août.|sept.|oct.|nov.|déc.)
+LOGTIMESTAMP %{MONTHNAMECATALINAFR}%{SPACE}%{MONTHDAY},%{SPACE}%{YEAR}%{SPACE}%{TIME}%{SPACE}%{WORD}
 NEWLINE \r?\n
 CATALINAEXCEPTION (?m)^.*?Exception.*(?:\R+^\s*at .*)+
