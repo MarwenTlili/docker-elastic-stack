@@ -8,7 +8,7 @@ EXPOSE 25 587 2525
 RUN set -x \
   && echo mail > /etc/hostname \
   && echo "postfix postfix/main_mailer_type string Internet site" >> preseed.txt \
-  && echo "postfix postfix/mailname string mail.example.com" >> preseed.txt \
+  && echo "postfix postfix/mailname string mail.gpro.com" >> preseed.txt \
   && debconf-set-selections preseed.txt && rm preseed.txt \
   ;
 

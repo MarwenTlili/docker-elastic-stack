@@ -7,7 +7,7 @@ is_enabled: false
 
 # (Required)
 # Rule name, must be unique
-name: apache acces response 500 change
+name: "apache acces response 500 change"
 
 # (Required)
 # Type of alert.
@@ -16,7 +16,7 @@ type: change
 
 # (Required)
 # Index to search, wildcard supported
-index: logstash-apache-access-*
+index: workstation-apache-access-logs
 
 # (Required, change specific)
 # The field to look for changes in
@@ -53,3 +53,6 @@ alert:
 # a list of email addresses to send alerts to
 email:
 - "whateverapis@gmail.com"
+smtp_host: mail.gpro.com
+smtp_port: 587
+

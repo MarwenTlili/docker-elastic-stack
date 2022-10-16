@@ -40,7 +40,7 @@ alias_database = hash:/etc/aliases
 myorigin = mail.gpro.com
 mydestination = mail.gpro.com
 #relayhost = smtp.gmail.com
-mynetworks = 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 172.25.0.0/8
+mynetworks = 127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.1.0/16, 172.25.0.0/8, 172.23.0.0/8
 mailbox_size_limit = 0
 recipient_delimiter = +
 inet_interfaces = all
@@ -55,12 +55,12 @@ always_add_missing_headers = no
 
 
 # gmail smtp conf + sasl app auth
-relayhost = [smtp.gmail.com]:587
+relayhost = [smtp-mail.outlook.com]:587
 smtp_sasl_auth_enable = yes
 smtp_sasl_password_maps = hash:/etc/postfix/sasl/sasl_passwd
-smtp_sasl_security_options = 
-#smtp_tls_CApath = /etc/ssl/certs
-#smtpd_tls_CApath = /etc/ssl/certs
+smtp_sasl_security_options = noanonymous
+smtp_tls_CApath = /etc/ssl/certs
+smtpd_tls_CApath = /etc/ssl/certs
 smtp_use_tls = yes
 
-smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+#smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt

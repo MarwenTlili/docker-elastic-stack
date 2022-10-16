@@ -3,7 +3,7 @@ is_enabled: true
 
 # (Required)
 # Rule name, must be unique
-name: apache acces response 500 frequency
+name: "apache acces response 500 frequency"
 
 # (Required)
 # Type of alert.
@@ -12,7 +12,7 @@ type: frequency
 
 # (Required)
 # Index to search, wildcard supported
-index: logstash-apache-access-*
+index: workstation-apache-access-logs
 
 # (Required, frequency specific)
 # Alert when this many documents matching the query occur within a timeframe
@@ -21,7 +21,7 @@ num_events: 1
 # (Required, frequency specific)
 # num_events must occur within this amount of time to trigger an alert
 timeframe:
-  hours: 9
+  hours: 2
 
 # (Required)
 # A list of Elasticsearch filters used for find events
@@ -39,11 +39,11 @@ alert:
 # (required, email specific)
 # a list of email addresses to send alerts to
 email:
-- "whateverapis@gmail.com"
+- "tlili_marwen@live.fr"
 
 smtp_host: mail.gpro.com
 smtp_port: 587
 # smtp:ssl: true
-# # from_addr: whateverapis@gmail.com
-# user: "whateverapis@gmail.com"
-# password: "xcatwyxwpfpqpmga"
+# from_addr: tlili_marwen@live.fr
+# user: "tlili_marwen@live.fr"
+# password: "sh_i0620062"

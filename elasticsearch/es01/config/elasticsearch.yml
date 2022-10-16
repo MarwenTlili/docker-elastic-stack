@@ -26,8 +26,9 @@ xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.client_authentication: required
 xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
 xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+
 xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.keystore.path: http.p12
-
-# to resolve executing command "like: elasticsearch-setup-passwords auto" from node terminal
 xpack.security.http.ssl.verification_mode: certificate
+
+# xpack.monitoring.collection.enabled: false

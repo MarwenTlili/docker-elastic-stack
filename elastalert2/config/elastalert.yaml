@@ -15,10 +15,10 @@ buffer_time:
 
 # The Elasticsearch hostname for metadata writeback
 # Note that every rule can have its own Elasticsearch host
-es_host: ${ES_HOST}
+es_host: es01
 
 # The Elasticsearch port
-es_port: ${ES_PORT}
+es_port: 9200
 
 # The AWS region to use. Set this when using AWS-managed elasticsearch
 #aws_region: us-east-1
@@ -38,13 +38,13 @@ es_port: ${ES_PORT}
 #statsd_host: dogstatsd
 
 # Connect with TLS to Elasticsearch
-#use_ssl: True
+use_ssl: True
 
-# Verify TLS certificates
-#verify_certs: True
+# Verify TLS certificates False
+verify_certs: True
 
 # Show TLS or certificate related warnings
-#ssl_show_warn: True
+ssl_show_warn: True
 
 # GET request with body is the default option for Elasticsearch.
 # If it fails for some reason, you can pass 'GET', 'POST' or 'source'.
@@ -53,14 +53,15 @@ es_port: ${ES_PORT}
 #es_send_get_body_as: GET
 
 # Option basic-auth username and password for Elasticsearch
-es_username: ${ES_USERNAME}
-es_password: ${ES_PASSWORD}
+es_username: elastalert
+es_password: elastalert
 
 # Use SSL authentication with client certificates client_cert must be
 # a pem file containing both cert and key for client
 #ca_certs: /path/to/cacert.pem
-#client_cert: /path/to/client_cert.pem
-#client_key: /path/to/client_key.key
+ca_certs: /opt/elastalert/cert/elasticsearch-ca.pem
+client_cert: /opt/elastalert/cert/client.crt
+client_key: /opt/elastalert/cert/client.key
 
 # The index on es_host which is used for metadata storage
 # This can be a unmapped index, but it is recommended that you run
@@ -82,46 +83,46 @@ alert_time_limit:
 # the configuration below and adjust to your needs.
 # Note: if you run ElastAlert with --verbose/--debug, the log level of
 # the "elastalert" logger is changed to INFO, if not already INFO/DEBUG.
-#logging:
+# logging:
 #  version: 1
 #  incremental: false
 #  disable_existing_loggers: false
 #  formatters:
 #    logline:
 #      format: '%(asctime)s %(levelname)+8s %(name)+20s %(message)s'
-#
+
 #  handlers:
 #    console:
 #      class: logging.StreamHandler
 #      formatter: logline
 #      level: DEBUG
 #      stream: ext://sys.stderr
-#
-#    file:
-#      class : logging.FileHandler
-#      formatter: logline
-#      level: DEBUG
-#      filename: elastalert.log
-#
+
+#   #  file:
+#   #    class : logging.FileHandler
+#   #    formatter: logline
+#   #    level: DEBUG
+#   #    filename: elastalert.log
+
 #  loggers:
 #    elastalert:
 #      level: WARN
 #      handlers: []
 #      propagate: true
-#
+
 #    elasticsearch:
 #      level: WARN
 #      handlers: []
 #      propagate: true
-#
+
 #    elasticsearch.trace:
 #      level: WARN
 #      handlers: []
 #      propagate: true
-#
-#    '':  # root logger
-#      level: WARN
-#      handlers:
-#        - console
-#        - file
-#      propagate: false
+
+#   #  '':  # root logger
+#   #    level: WARN
+#   #    handlers:
+#   #      - console
+#   #      - file
+#   #    propagate: false

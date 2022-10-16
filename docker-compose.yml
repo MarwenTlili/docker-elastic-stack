@@ -8,7 +8,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     container_name: es01
     hostname: es01
-    # user: "1000"
     environment:
       - discovery.seed_hosts=es02,es03,es04,es05      # list of the addresses of the master-eligible nodes in the cluster.
       - cluster.initial_master_nodes=es01             # Identify the initial master nodes by their node.name
@@ -32,6 +31,11 @@ services:
       - "9300:9300"   # for transport address
     networks:
       - elk
+    depends_on:
+      - es02
+      - es03
+      - es04
+      - es05
   #############################################################################
   # es02 - data node
   #############################################################################
@@ -144,8 +148,6 @@ services:
     environment:
       LS_JAVA_OPTS: -Xmx512m -Xms512m
       LOGSTASH_KEYSTORE_PASS: ${LOGSTASH_KEYSTORE_PASS}
-      # ES_LOGSTASH_INTERNAL_PWD: ${ES_LOGSTASH_INTERNAL_PWD}
-      # ES_LOGSTASH_SYSTEM_PWD: ${ES_LOGSTASH_SYSTEM_PWD}
       KAFKA_HOST: kafka.gproconsulting.com
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
@@ -158,7 +160,7 @@ services:
       - elk
     depends_on:
       - es01
-      # - kafka
+      - kafka
   #####################################################################################################################
   # kibana: search, observe, analyze your data - Manage, monitor, and secure the Elastic Stack
   #####################################################################################################################
@@ -166,6 +168,7 @@ services:
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
     container_name: kibana
     environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # NOT RECOMMENDED IN PRODUCTION.
       - SERVER_NAME=kibana
       - SERVER_HOST=kibana
       - ELASTICSEARCH_HOSTS=["https://es01:9200"]
@@ -192,9 +195,10 @@ services:
     ports:
       - '2181:2181'
     environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # NOT RECOMMENDED IN PRODUCTION.
       - ZOO_SERVER_ID=1
       - ALLOW_ANONYMOUS_LOGIN=no  # disable anonymous login
-      - ZOO_ENABLE_AUTH=${ZOO_ENABLE_AUTH}
+      - ZOO_ENABLE_AUTH=yes
       - ZOO_SERVER_USERS=${ZOO_SERVER_USERS}
       - ZOO_SERVER_PASSWORDS=${ZOO_SERVER_PASSWORDS}
     volumes:
@@ -212,42 +216,41 @@ services:
       - '9092:9092'
       - '9093:9093'
     environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # NOT RECOMMENDED IN PRODUCTION.
       - BITNAMI_DEBUG=true # false when in PRODUCTION
       - KAFKA_BROKER_ID=1
       - ALLOW_PLAINTEXT_LISTENER=no
+
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+
       # key/value pairs for the security protocol to use per listener name
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+
       # list of listeners and the host/IP and port to which Kafka binds to for listening
       - KAFKA_CFG_LISTENERS=INTERNAL://:9093,EXTERNAL://:9092
+
       # list of listeners with their host/IP and port
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://:9093,EXTERNAL://localhost:9092
+
       # define which listener to use, for Kafka brokers communicate between themselves
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
       - KAFKA_INTER_BROKER_USER=${KAFKA_INTER_BROKER_USER}            # inter broker communication user
       - KAFKA_INTER_BROKER_PASSWORD=${KAFKA_INTER_BROKER_PASSWORD}
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=SCRAM-SHA-256  # or PLAIN,SCRAM-SHA-256,SCRAM-SHA-512,OAUTHBEARER
+
       - KAFKA_ZOOKEEPER_PROTOCOL=${KAFKA_ZOOKEEPER_PROTOCOL}          # auth protocol SASL
       - KAFKA_ZOOKEEPER_USER=${KAFKA_ZOOKEEPER_USER}
       - KAFKA_ZOOKEEPER_PASSWORD=${KAFKA_ZOOKEEPER_PASSWORD}
-      # - KAFKA_CFG_SASL_ENABLED_MECHANISMS=PLAIN # default: PLAIN,SCRAM-SHA-256,SCRAM-SHA-512
+
       - KAFKA_CLIENT_USERS=${KAFKA_CLIENT_USERS}
       - KAFKA_CLIENT_PASSWORDS=${KAFKA_CLIENT_PASSWORDS}
     volumes:
       - kafka-data:/bitnami/kafka
       - kafka-config:/opt/bitnami/kafka/config
-    #   # Both .jks and .pem files are supported
-    #   - './certs/keystore/kafka.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro'
-    #   - './certs/truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
     depends_on:
       - zookeeper
     networks:
       - elk
-  #####################################################################################################################
-
-networks:
-  elk:
-    driver: bridge
 
 volumes:
   es01_data:
@@ -263,3 +266,8 @@ volumes:
   zookeeper-data:
   kafka-data:
   kafka-config:
+  server_data:
+
+networks:
+  elk:
+    driver: bridge
